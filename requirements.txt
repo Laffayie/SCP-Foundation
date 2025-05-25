@@ -1,6 +1,7 @@
 # Core web framework and utilities
 Flask==2.3.3
 Werkzeug==2.3.7
+gunicorn
 
 # Image processing for profile image uploads
 Pillow==10.0.0
