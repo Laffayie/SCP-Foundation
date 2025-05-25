@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}User Profile - {{ user['username'] }}{% endblock %}
+{% block content %}
+<div class="card p-6 shadow-lg max-w-2xl mx-auto">
+    <h2 class="text-xl font-bold mb-4">User Profile: {{ user['username'] }}</h2>
+    <img src="{{ url_for('static', filename='uploads/' + user['profile_image']) }}" alt="Profile Image" class="w-24 h-24 rounded-full mx-auto mb-4">
+    {% if session.role == 'O5' %}
+        <form method="POST" action="{{ url_for('update_user', user_id=user['id']) }}" enctype="multipart/form-data">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium">Username</label>
+                    <input type="text" name="username" id="username" value="{{ user['username'] }}" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                </div>
+                <div>
+                    <label for="nickname" class="block text-sm font-medium">Nickname</label>
+                    <input type="text" name="nickname" id="nickname" value="{{ user['nickname'] }}" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                </div>
+                <div>
+                    <label for="role" class="block text-sm font-medium">Role</label>
+                    <select name="role" id="role" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                        <option value="Scientist" {% if user['role'] == 'Scientist' %}selected{% endif %}>Scientist</option>
+                        <option value="Security" {% if user['role'] == 'Security' %}selected{% endif %}>Security</option>
+                        <option value="SCP" {% if user['role'] == 'SCP' %}selected{% endif %}>SCP</option>
+                        <option value="D-Class" {% if user['role'] == 'D-Class' %}selected{% endif %}>D-Class</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium">New Password (leave blank to keep current)</label>
+                    <input type="password" name="password" id="password" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+                </div>
+                <div>
+                    <label for="profile_image" class="block text-sm font-medium">Profile Image</label>
+                    <input type="file" name="profile_image" id="profile_image" accept="image/*" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+                </div>
+            </div>
+            <button type="submit" class="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Update User</button>
+        </form>
+    {% else %}
+        <p><strong>Username:</strong> {{ user['username'] }}</p>
+        <p><strong>Role:</strong> {{ user['role'] }}</p>
+        <p><strong>Nickname:</strong> {{ user['nickname'] }}</p>
+    {% endif %}
+</div>
+{% endblock %}

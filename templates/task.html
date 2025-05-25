@@ -1,0 +1,90 @@
+{% extends "base.html" %} {% block title %}Manage Tasks{% endblock %} {% block
+content %}
+<div class="card">
+  <h2 class="text-xl font-bold mb-4">Manage Tasks</h2>
+  <form method="POST" class="mb-6 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="title" class="block text-sm font-medium">Task Title</label>
+        <input
+          type="text"
+          name="title"
+          id="title"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-white"
+          required
+        />
+      </div>
+      <div>
+        <label for="assigned_to" class="block text-sm font-medium"
+          >Assigned To</label
+        >
+        <select
+          name="assigned_to"
+          id="assigned_to"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-white"
+          required
+        >
+          {% for user in users %}
+          <option value="{{ user['id'] }}">{{ user['username'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="status" class="block text-sm font-medium">Status</label>
+        <select
+          name="status"
+          id="status"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-white"
+          required
+        >
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label for="description" class="block text-sm font-medium"
+          >Description</label
+        >
+        <textarea
+          name="description"
+          id="description"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-800 text-white"
+        ></textarea>
+      </div>
+    </div>
+    <button
+      type="submit"
+      class="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+    >
+      Create Task
+    </button>
+  </form>
+  <table class="w-full table-auto">
+    <thead>
+      <tr class="bg-gray-700">
+        <th class="p-2 text-left">Title</th>
+        <th class="p-2 text-left">Assigned To</th>
+        <th class="p-2 text-left">Status</th>
+        <th class="p-2 text-left">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in tasks %}
+      <tr class="border-b border-gray-600">
+        <td class="p-2">
+          <a
+            href="{{ url_for('task_profile', task_id=task['id']) }}"
+            class="text-blue-400 hover:underline"
+            >{{ task['title'] }}</a
+          >
+        </td>
+        <td class="p-2">{{ task['username'] }}</td>
+        <td class="p-2">{{ task['status'] }}</td>
+        <td class="p-2">{{ task['description'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

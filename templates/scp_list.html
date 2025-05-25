@@ -1,0 +1,41 @@
+{% extends "base.html" %} {% block content %}
+<h2>SCP Management</h2>
+<form method="POST">
+  {{ form.hidden_tag() }}
+  <div>{{ form.item_number.label }} {{ form.item_number() }}</div>
+  <div>{{ form.object_class.label }} {{ form.object_class() }}</div>
+  <div>{{ form.containment_status.label }} {{ form.containment_status() }}</div>
+  <div>{{ form.description.label }} {{ form.description() }}</div>
+  <div>{{ form.submit() }}</div>
+</form>
+<h3>SCP List</h3>
+<table>
+  <tr>
+    <th>Item Number</th>
+    <th>Object Class</th>
+    <th>Containment Status</th>
+    <th>Actions</th>
+  </tr>
+  {% for scp in scps %}
+  <tr>
+    <td>{{ scp.item_number }}</td>
+    <td>{{ scp.object_class }}</td>
+    <td>{{ scp.containment_status }}</td>
+    <td>
+      <a href="{{ url_for('scp_edit', id=scp.id) }}">Edit</a>
+      {% if current_user.role == 'O5' %}
+      <form
+        method="POST"
+        action="{{ url_for('scp_delete', id=scp.id) }}"
+        style="display: inline"
+      >
+        <button type="submit" onclick="return confirm('Are you sure?')">
+          Delete
+        </button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

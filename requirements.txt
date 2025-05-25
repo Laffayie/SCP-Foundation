@@ -1,0 +1,16 @@
+# Core web framework and utilities
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Image processing for profile image uploads
+Pillow==10.0.0
+
+# PDF generation for reports
+reportlab==4.2.2
+
+# Optional: Form handling, authentication, and database management (if used in other parts)
+Flask-Login==0.6.2
+Flask-WTF==1.1.1
+python-dotenv==1.0.0
+email-validator==2.0.0
+Flask-Migrate==4.0.4

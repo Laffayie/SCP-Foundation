@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Task Profile - {{ task['title'] }}{% endblock %}
+{% block content %}
+<div class="card p-6 shadow-lg">
+    <h2 class="text-xl font-bold mb-4">Task Profile: {{ task['title'] }}</h2>
+    {% if role == 'O5' or task['assigned_to'] == session.user_id %}
+        <form method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="title" class="block text-sm font-medium">Title</label>
+                    <input type="text" name="title" id="title" value="{{ task['title'] }}" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                </div>
+                <div>
+                    <label for="assigned_to" class="block text-sm font-medium">Assigned To</label>
+                    <select name="assigned_to" id="assigned_to" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                        {% for user in users %}
+                            <option value="{{ user['id'] }}" {% if task['assigned_to'] == user['id'] %}selected{% endif %}>{{ user['username'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="status" class="block text-sm font-medium">Status</label>
+                    <select name="status" id="status" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                        <option value="Pending" {% if task['status'] == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="In Progress" {% if task['status'] == 'In Progress' %}selected{% endif %}>In Progress</option>
+                        <option value="Completed" {% if task['status'] == 'Completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium">Description</label>
+                    <textarea name="description" id="description" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">{{ task['description'] or '' }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Changes</button>
+        </form>
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p><strong>Title:</strong> {{ task['title'] }}</p>
+                <p><strong>Assigned To:</strong> {{ task['username'] }}</p>
+                <p><strong>Status:</strong> {{ task['status'] }}</p>
+            </div>
+            <div>
+                <p><strong>Description:</strong> {{ task['description'] or 'No description' }}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

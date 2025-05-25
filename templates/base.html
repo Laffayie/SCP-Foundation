@@ -1,0 +1,599 @@
+{% set role = session.get('role', 'O5') %}
+<!DOCTYPE html>
+<html
+  lang="en"
+  class="{{ 'dark' if session.get('theme', 'light') == 'dark' else '' }}"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCP Control Panel - {% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              border: "hsl(217.2 32.6% 17.5%)",
+              input: "hsl(217.2 32.6% 17.5%)",
+              ring: "hsl(212.7 26.8% 83.9%)",
+              background: "hsl(222.2 84% 4.9%)",
+              foreground: "hsl(210 40% 98%)",
+              primary: {
+                DEFAULT: "hsl(210 40% 98%)",
+                foreground: "hsl(222.2 84% 4.9%)",
+              },
+              secondary: {
+                DEFAULT: "hsl(217.2 32.6% 17.5%)",
+                foreground: "hsl(210 40% 98%)",
+              },
+              destructive: {
+                DEFAULT: "hsl(0 62.8% 30.6%)",
+                foreground: "hsl(210 40% 98%)",
+              },
+              muted: {
+                DEFAULT: "hsl(217.2 32.6% 17.5%)",
+                foreground: "hsl(215 20.2% 65.1%)",
+              },
+              accent: {
+                DEFAULT: "hsl(217.2 32.6% 17.5%)",
+                foreground: "hsl(210 40% 98%)",
+              },
+              card: {
+                DEFAULT: "hsl(222.2 84% 4.9%)",
+                foreground: "hsl(210 40% 98%)",
+              },
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-in-out",
+              "slide-up": "slideUp 0.3s ease-out",
+              "pulse-glow": "pulseGlow 2s infinite",
+              "bounce-subtle": "bounceSubtle 1s ease-in-out",
+              "spin-slow": "spin 3s linear infinite",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0", transform: "translateY(10px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(100%)" },
+                "100%": { transform: "translateY(0)" },
+              },
+              pulseGlow: {
+                "0%, 100%": { boxShadow: "0 0 5px rgba(59, 130, 246, 0.5)" },
+                "50%": { boxShadow: "0 0 20px rgba(59, 130, 246, 0.8)" },
+              },
+              bounceSubtle: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-5px)" },
+              },
+            },
+          },
+        },
+      };
+
+      function generateReport() {
+        fetch("/generate_report", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              return response.json().then((err) => {
+                throw new Error(err.message);
+              });
+            }
+            return response.blob();
+          })
+          .then((blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "SCP_Foundation_Report.pdf";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            showToast("Report generated successfully!", "success");
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showToast(`Failed to generate report: ${error.message}`, "error");
+          });
+      }
+
+      const showToast = (message, type) => {
+        const toast = document.createElement("div");
+        toast.className = `toast ${type} show`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      };
+    </script>
+    <style>
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .glow-border {
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.3);
+      }
+      .scp-gradient {
+        background: linear-gradient(
+          135deg,
+          #1e1b4b 0%,
+          #312e81 50%,
+          #1e3a8a 100%
+        );
+      }
+      .danger-gradient {
+        background: linear-gradient(
+          135deg,
+          #7f1d1d 0%,
+          #991b1b 50%,
+          #dc2626 100%
+        );
+      }
+      .success-gradient {
+        background: linear-gradient(
+          135deg,
+          #14532d 0%,
+          #166534 50%,
+          #16a34a 100%
+        );
+      }
+      .warning-gradient {
+        background: linear-gradient(
+          135deg,
+          #92400e 0%,
+          #d97706 50%,
+          #f59e0b 100%
+        );
+      }
+      .nav-item.active {
+        background: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid #3b82f6;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.3);
+        border-radius: 3px;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+      }
+      .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground min-h-screen">
+    <!-- Animated Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div
+        class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"
+      ></div>
+      <div
+        class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"
+      ></div>
+      <div
+        class="absolute top-3/4 left-1/2 w-64 h-64 bg-green-500/10 rounded-full blur-3xl animate-pulse delay-2000"
+      ></div>
+    </div>
+
+    <div class="flex h-screen relative z-10">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="w-64 glass-effect transition-all duration-300 ease-in-out overflow-hidden"
+      >
+        <div class="p-6 h-full flex flex-col">
+          <!-- Logo/Header -->
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-10 h-10 scp-gradient rounded-lg flex items-center justify-center animate-pulse-glow"
+              >
+                <i class="fas fa-shield-alt text-white text-lg"></i>
+              </div>
+              <h1
+                class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+              >
+                SCP Foundation
+              </h1>
+            </div>
+            <button
+              id="sidebarToggle"
+              class="lg:hidden p-2 rounded-md hover:bg-accent transition-colors"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="space-y-2 flex-1">
+            <a
+              href="{{ url_for('dashboard') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'dashboard' %}active{% endif %}"
+              data-section="dashboard"
+            >
+              <i
+                class="fas fa-home text-blue-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Dashboard</span>
+            </a>
+            {% if role in ['O5', 'Scientist'] %}
+            <a
+              href="{{ url_for('manage_scp') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'manage_scp' %}active{% endif %}"
+              data-section="manage-scps"
+            >
+              <i
+                class="fas fa-file-alt text-green-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Manage SCPs</span>
+            </a>
+            <a
+              href="{{ url_for('manage_task') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'manage_task' %}active{% endif %}"
+              data-section="manage-tasks"
+            >
+              <i
+                class="fas fa-tasks text-yellow-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Manage Tasks</span>
+            </a>
+            {% endif %}
+            <a
+              href="{{ url_for('profile') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'profile' %}active{% endif %}"
+              data-section="profile"
+            >
+              <i
+                class="fas fa-user text-purple-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Profile</span>
+            </a>
+            {% if role == 'O5' %}
+            <a
+              href="{{ url_for('manage_users') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'manage_users' %}active{% endif %}"
+              data-section="manage-users"
+            >
+              <i
+                class="fas fa-users text-indigo-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Manage Users</span>
+            </a>
+            <a
+              href="{{ url_for('register') }}"
+              class="nav-item flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-accent group {% if request.endpoint == 'register' %}active{% endif %}"
+              data-section="register-user"
+            >
+              <i
+                class="fas fa-user-plus text-cyan-400 group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Register User</span>
+            </a>
+            {% endif %}
+          </nav>
+
+          <!-- User Info -->
+          <div class="mt-auto">
+            <div class="glass-effect p-4 rounded-lg border mb-4">
+              <div class="flex items-center space-x-3">
+                <div
+                  class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center"
+                >
+                  <i class="fas fa-user-shield text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium">Welcome</p>
+                  <p class="text-xs text-muted-foreground" id="userRole">
+                    {{ role }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logout -->
+            <a
+              href="{{ url_for('logout') }}"
+              class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-destructive/10 text-red-400 group"
+            >
+              <i
+                class="fas fa-sign-out-alt group-hover:scale-110 transition-transform"
+              ></i>
+              <span>Logout</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-auto p-6">
+        {% block content %} {% endblock %}
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="newScpModal" class="modal">
+      <div class="glass-effect p-6 rounded-lg w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">New SCP Entry</h2>
+        <form
+          id="newScpForm"
+          method="POST"
+          action="{{ url_for('manage_scp') }}"
+        >
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">SCP ID</label>
+            <input
+              type="text"
+              name="scp_id"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Class</label>
+            <select
+              name="class"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            >
+              <option value="Safe">Safe</option>
+              <option value="Euclid">Euclid</option>
+              <option value="Keter">Keter</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2"
+              >Containment Status</label
+            >
+            <select
+              name="containment_status"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            >
+              <option value="Contained">Contained</option>
+              <option value="Breached">Breached</option>
+              <option value="Uncontained">Uncontained</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              name="description"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+            ></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Assigned User</label>
+            <select
+              name="assigned_user"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+            >
+              <option value="">None</option>
+              {% for user in users %}
+              <option value="{{ user['id'] }}">{{ user['username'] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              onclick="hideModal('newScpModal')"
+              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="newTaskModal" class="modal">
+      <div class="glass-effect p-6 rounded-lg w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Create Task</h2>
+        <form
+          id="newTaskForm"
+          method="POST"
+          action="{{ url_for('manage_task') }}"
+        >
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Title</label>
+            <input
+              type="text"
+              name="title"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Assigned To</label>
+            <select
+              name="assigned_to"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            >
+              {% for user in users %}
+              <option value="{{ user['id'] }}">{{ user['username'] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Status</label>
+            <select
+              name="status"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            >
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              name="description"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+            ></textarea>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              onclick="hideModal('newTaskModal')"
+              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="newUserModal" class="modal">
+      <div class="glass-effect p-6 rounded-lg w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Add User</h2>
+        <form id="newUserForm" method="POST" action="{{ url_for('register') }}">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Username</label>
+            <input
+              type="text"
+              name="username"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Password</label>
+            <input
+              type="password"
+              name="password"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Nickname</label>
+            <input
+              type="text"
+              name="nickname"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Role</label>
+            <select
+              name="role"
+              class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground"
+              required
+            >
+              <option value="Scientist">Scientist</option>
+              <option value="Security">Security</option>
+              <option value="D-Class">D-Class</option>
+            </select>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              onclick="hideModal('newUserModal')"
+              class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg"
+            >
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Sidebar toggle for mobile
+      document.getElementById("sidebarToggle").addEventListener("click", () => {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("hidden");
+      });
+
+      // Modal handling
+      function showModal(modalId) {
+        document.getElementById(modalId).classList.add("active");
+      }
+
+      function hideModal(modalId) {
+        document.getElementById(modalId).classList.remove("active");
+      }
+
+      function showNewScpModal() {
+        showModal("newScpModal");
+      }
+
+      function showNewTaskModal() {
+        showModal("newTaskModal");
+      }
+
+      function showNewUserModal() {
+        showModal("newUserModal");
+      }
+
+      // Update current time
+      function updateTime() {
+        const timeElement = document.getElementById("currentTime");
+        if (timeElement) {
+          const now = new Date();
+          timeElement.textContent = now.toLocaleString();
+        }
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}SCP Profile - {{ scp['scp_id'] }}{% endblock %}
+{% block content %}
+<div class="card p-6 shadow-lg">
+    <h2 class="text-xl font-bold mb-4">SCP Profile: {{ scp['scp_id'] }}</h2>
+    {% if role == 'O5' or (scp['assigned_to'] == session.user_id and role in ['Scientist', 'Security']) %}
+        <form method="POST">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="class" class="block text-sm font-medium">Class</label>
+                    <select name="class" id="class" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                        <option value="Safe" {% if scp['class'] == 'Safe' %}selected{% endif %}>Safe</option>
+                        <option value="Euclid" {% if scp['class'] == 'Euclid' %}selected{% endif %}>Euclid</option>
+                        <option value="Keter" {% if scp['class'] == 'Keter' %}selected{% endif %}>Keter</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="containment_status" class="block text-sm font-medium">Containment Status</label>
+                    <select name="containment_status" id="containment_status" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white" required>
+                        <option value="Contained" {% if scp['containment_status'] == 'Contained' %}selected{% endif %}>Contained</option>
+                        <option value="Breached" {% if scp['containment_status'] == 'Breached' %}selected{% endif %}>Breached</option>
+                        <option value="Unknown" {% if scp['containment_status'] == 'Unknown' %}selected{% endif %}>Unknown</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="assigned_to" class="block text-sm font-medium">Assigned To</label>
+                    <select name="assigned_to" id="assigned_to" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">
+                        <option value="">Unassigned</option>
+                        {% for user in users %}
+                            <option value="{{ user['id'] }}" {% if scp['assigned_to'] == user['id'] %}selected{% endif %}>{{ user['username'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium">Description</label>
+                    <textarea name="description" id="description" class="w-full p-2 border rounded dark:bg-gray-700 dark:text-white">{{ scp['description'] or '' }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="mt-4 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Save Changes</button>
+        </form>
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p><strong>Class:</strong> {{ scp['class'] }}</p>
+                <p><strong>Containment Status:</strong> {{ scp['containment_status'] }}</p>
+                <p><strong>Assigned To:</strong> {{ scp['username'] or 'Unassigned' }}</p>
+            </div>
+            <div>
+                <p><strong>Description:</strong> {{ scp['description'] or 'No description' }}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

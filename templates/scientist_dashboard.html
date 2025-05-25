@@ -1,0 +1,12 @@
+{% extends "base.html" %} {% block content %}
+<h2>Scientist Dashboard</h2>
+<p>
+  Welcome, {{ user.nickname or user.username }}! Access your tasks and SCP data.
+</p>
+<ul>
+  <li><a href="{{ url_for('scp_list') }}">Manage SCPs</a></li>
+  <li><a href="{{ url_for('task_list') }}">View Tasks</a></li>
+  <li><a href="{{ url_for('statistics') }}">View Statistics</a></li>
+  <li><a href="{{ url_for('profile') }}">Edit Profile</a></li>
+</ul>
+{% endblock %}

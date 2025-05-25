@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block content %}
+<h2>SCP Statistics</h2>
+<p>Total SCPs: {{ scp_count }}</p>
+<h3>By Object Class</h3>
+<ul>
+  {% for class_name, count in class_counts %}
+  <li>{{ class_name }}: {{ count }}</li>
+  {% endfor %}
+</ul>
+<h3>By Containment Status</h3>
+<ul>
+  {% for status, count in status_counts %}
+  <li>{{ status }}: {{ count }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %} {% block content %}
+<h2>Task Management</h2>
+{% if current_user.role == 'O5' %}
+<form method="POST">
+  {{ form.hidden_tag() }}
+  <div>{{ form.title.label }} {{ form.title() }}</div>
+  <div>{{ form.description.label }} {{ form.description() }}</div>
+  <div>{{ form.assigned_to.label }} {{ form.assigned_to() }}</div>
+  <div>{{ form.status.label }} {{ form.status() }}</div>
+  <div>{{ form.submit() }}</div>
+</form>
+{% endif %}
+<h3>Tasks</h3>
+<table>
+  <tr>
+    <th>Title</th>
+    <th>Assigned To</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+  {% for task in tasks %}
+  <tr>
+    <td>{{ task.title }}</td>
+    <td>{{ task.assigned_to }}</td>
+    <td>{{ task.status }}</td>
+    <td>
+      {% if current_user.role == 'O5' or task.assigned_to == current_user.role
+      %}
+      <a href="{{ url_for('task_edit', id=task.id) }}">Edit</a>
+      {% endif %} {% if current_user.role == 'O5' %}
+      <form
+        method="POST"
+        action="{{ url_for('task_delete', id=task.id) }}"
+        style="display: inline"
+      >
+        <button type="submit" onclick="return confirm('Are you sure?')">
+          Delete
+        </button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

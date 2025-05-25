@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div id="profile-section" class="section">
+    <h1 class="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+        Profile Settings
+    </h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-4 p-3 rounded-lg {% if category == 'error' %}bg-red-500/20 text-red-400{% else %}bg-green-500/20 text-green-400{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass-effect p-6 rounded-lg border">
+            <h2 class="text-xl font-semibold mb-4">Personal Information</h2>
+            <form id="profileForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="flex justify-center mb-4">
+                    <img src="{{ url_for('static', filename='uploads/' + user['profile_image']) }}" alt="Profile Image" class="w-24 h-24 rounded-full object-cover">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Username</label>
+                    <input type="text" id="profileUsername" value="{{ user['username'] }}" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nickname</label>
+                    <input type="text" id="profileNickname" name="nickname" value="{{ user['nickname'] }}" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Role</label>
+                    <input type="text" id="profileRole" value="{{ user['role'] }}" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Bio</label>
+                    <textarea name="bio" id="bio" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground">{{ user['bio'] or '' }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Profile Image</label>
+                    <input type="file" name="profile_image" id="profile_image" accept="image/*" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Theme</label>
+                    <select id="profileTheme" name="theme" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground">
+                        <option value="light" {% if user['theme'] == 'light' %}selected{% endif %}>Light</option>
+                        <option value="dark" {% if user['theme'] == 'dark' %}selected{% endif %}>Dark</option>
+                    </select>
+                </div>
+                <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">
+                    Update Profile
+                </button>
+            </form>
+        </div>
+
+        <div class="glass-effect p-6 rounded-lg border">
+            <h2 class="text-xl font-semibold mb-4">Security Settings</h2>
+            <form id="passwordForm" method="POST" action="{{ url_for('profile') }}" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">New Password (leave blank to keep current)</label>
+                    <input type="password" id="newPassword" name="password" class="w-full px-3 py-2 bg-secondary border border-border rounded-lg text-foreground">
+                </div>
+                <button type="submit" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    Change Password
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

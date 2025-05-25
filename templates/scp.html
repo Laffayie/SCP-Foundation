@@ -1,0 +1,74 @@
+{% extends "base.html" %} {% block title %}Manage SCPs{% endblock %} {% block
+content %}
+<div id="manage-scps-section" class="section">
+  <div class="flex items-center justify-between mb-6">
+    <h1
+      class="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent"
+    >
+      Manage SCPs
+    </h1>
+    {% if role in ['O5', 'Scientist'] %}
+    <button
+      onclick="showNewScpModal()"
+      class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+    >
+      <i class="fas fa-plus mr-2"></i>New SCP
+    </button>
+    {% endif %}
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div
+    class="mb-4 p-3 rounded-lg {% if category == 'error' %}bg-red-500/20 text-red-400{% else %}bg-green-500/20 text-green-400{% endif %}"
+  >
+    {{ message }}
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <div class="glass-effect rounded-lg border overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-accent/50">
+          <tr>
+            <th class="p-4 text-left">SCP ID</th>
+            <th class="p-4 text-left">Class</th>
+            <th class="p-4 text-left">Status</th>
+            <th class="p-4 text-left">Assigned Personnel</th>
+            <th class="p-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="scpTableBody">
+          {% for scp in scps %}
+          <tr class="border-b border-muted">
+            <td class="p-4">
+              <a
+                href="{{ url_for('scp_profile', scp_id=scp['scp_id']) }}"
+                class="text-blue-400 hover:underline"
+                >{{ scp['scp_id'] }}</a
+              >
+            </td>
+            <td class="p-4">{{ scp['class'] }}</td>
+            <td class="p-4">{{ scp['containment_status'] }}</td>
+            <td class="p-4">{{ scp['assigned_users'] or 'None' }}</td>
+            <td class="p-4">
+              {% if role == 'O5' %}
+              <form
+                action="{{ url_for('delete_scp', scp_id=scp['scp_id']) }}"
+                method="POST"
+                class="inline"
+              >
+                <button type="submit" class="text-red-400 hover:text-red-600">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
