@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import uuid
 import re
 from datetime import datetime
-
+import pytz
 from io import BytesIO
 import tempfile
 import logging
@@ -88,10 +88,12 @@ def get_db():
     return conn
 
 def log_activity(user_id, action):
+    tz = pytz.timezone('Europe/Paris')  # Use CEST time zone
+    timestamp = tz.localize(datetime.now()).strftime('%Y-%m-%d %H:%M:%S')
     with get_db() as conn:
         c = conn.cursor()
         c.execute('INSERT INTO activities (user_id, action, timestamp) VALUES (?, ?, ?)',
-                  (user_id, action, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                  (user_id, action, timestamp))
         conn.commit()
 
 # Middleware to check login
